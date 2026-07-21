@@ -99,6 +99,11 @@ a{color:inherit;}
 .arch-silhouette{
   position:absolute; bottom:0; left:50%; transform:translateX(-50%);
   width:min(1400px, 220vw); opacity:.5;
+  animation: archBreathe 18s ease-in-out infinite alternate;
+}
+@keyframes archBreathe{
+  0%{ opacity:.48; transform: translateX(-50%) scale(1); }
+  100%{ opacity:.56; transform: translateX(-50%) scale(1.015); }
 }
 .particles{ position:absolute; inset:0; }
 .particle{
@@ -308,6 +313,34 @@ main.hidden{ display:none; }
 
 /* ---- Hero ---- */
 #hero{ min-height:92vh; justify-content:center; padding-top: 100px; }
+
+/* ---- Scroll indicator ---- */
+.scroll-indicator{
+  position:fixed; bottom:50px; left:50%; transform:translateX(-50%);
+  z-index:15;
+  display:flex; flex-direction:column; align-items:center; gap:9px;
+  opacity:0; visibility:hidden;
+  transition: opacity .4s var(--ease-out), visibility .4s;
+  pointer-events:none;
+}
+.scroll-indicator.visible{ opacity:1; visibility:visible; }
+.scroll-indicator.dismissed{ opacity:0; transition: opacity .4s ease; }
+.scroll-line{
+  width:1px; height:32px;
+  background: linear-gradient(to bottom, transparent, var(--gold) 45%, var(--gold));
+}
+.scroll-arrow{
+  width:13px; height:8px; color: var(--gold);
+  animation: scrollArrowNudge 1.8s ease-in-out infinite;
+}
+.scroll-text{
+  font-family: var(--font-eyebrow); font-size:10.5px; letter-spacing:.24em;
+  color: var(--gold); opacity:.85;
+}
+@keyframes scrollArrowNudge{
+  0%, 100%{ transform: translateY(0); opacity:.4; }
+  50%{ transform: translateY(7px); opacity:1; }
+}
 .hero-basmala{
   font-family: var(--font-display); color: var(--gold);
   font-size: clamp(16px,2.4vw,20px); margin-bottom: 26px; opacity:.9;
@@ -548,6 +581,14 @@ main.hidden{ display:none; }
     </p>
   </section>
 
+  <div class="scroll-indicator" id="scroll-indicator" aria-hidden="true">
+    <span class="scroll-line"></span>
+    <svg class="scroll-arrow" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1l7 7 7-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="scroll-text">مرر للأسفل</span>
+  </div>
+
   <svg class="divider reveal" viewBox="0 0 220 36" aria-hidden="true"><use href="#ornament-1"/></svg>
 
   <!-- ---------- FAMILY / INVITATION CARD ---------- -->
@@ -606,8 +647,8 @@ main.hidden{ display:none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/></svg>
         </div>
         <div class="detail-label">المكان</div>
-        <div class="detail-value">مسجد الشرطة</div>
-        <div class="detail-sub">Police Mosque, Fifth Settlement</div>
+        <div class="detail-value">مسجد الشرطة, روف ١</div>
+        <div class="detail-sub">Police Mosque, Fifth Settlement, Roof 1</div>
       </div>
 
     </div>
@@ -783,6 +824,7 @@ main.hidden{ display:none; }
       musicBtn.classList.add("visible");
       initScrollReveal();
       initCountdown();
+      initScrollIndicator();
     }, t4);
   }
 
@@ -832,6 +874,28 @@ main.hidden{ display:none; }
     }
     tick();
     setInterval(tick, 1000);
+  }
+
+  /* ================= SCROLL INDICATOR ================= */
+  function initScrollIndicator(){
+    var indicator = document.getElementById("scroll-indicator");
+    if(!indicator) return;
+
+    setTimeout(function(){
+      indicator.classList.add("visible");
+    }, reduceMotion ? 0 : 900);
+
+    var dismissed = false;
+    function dismiss(){
+      if(dismissed) return;
+      if(window.scrollY > 10){
+        dismissed = true;
+        indicator.classList.remove("visible");
+        indicator.classList.add("dismissed");
+        window.removeEventListener("scroll", dismiss);
+      }
+    }
+    window.addEventListener("scroll", dismiss, { passive:true });
   }
 
   /* ================= MUSIC BUTTON ================= */
